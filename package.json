@@ -1,0 +1,23 @@
+{
+  "name": "u-tester",
+  "version": "1.0.0",
+  "description": "A very simple framework for unit tests",
+  "main": "main.mjs",
+  "scripts": {
+    "test": "node test.mjs ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tymnim/u-tester.git"
+  },
+  "keywords": [
+    "testing",
+    "unit-testing"
+  ],
+  "author": "Tim Nimets <tim@nimets.dev> (https://tim.nimets.dev/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tymnim/u-tester/issues"
+  },
+  "homepage": "https://github.com/tymnim/u-tester#readme"
+}
