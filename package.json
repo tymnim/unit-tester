@@ -1,5 +1,5 @@
 {
-  "name": "u-tester",
+  "name": "unit-tester",
   "version": "1.0.0",
   "description": "A very simple framework for unit tests",
   "main": "main.mjs",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tymnim/u-tester.git"
+    "url": "git+https://github.com/tymnim/unit-tester.git"
   },
   "keywords": [
     "testing",
