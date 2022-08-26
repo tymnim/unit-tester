@@ -14,7 +14,7 @@ I had to write it I was taking a bus for 6 hours and had no internet to add Moch
 
 # Installation
 ```
-~$ npm i u-tester --save-dev
+~$ npm i unit-tester --save-dev
 ```
 
 # Usage Notes
@@ -27,6 +27,7 @@ I had to write it I was taking a bus for 6 hours and had no internet to add Moch
 
 ```js
 import assert from "node:assert"
+import { Tests, Test } from "unit-tester"
 export default [
   Tests("Array",
     Test("#indexOf", () => {
