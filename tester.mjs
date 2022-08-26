@@ -1,4 +1,25 @@
 
+/**
+ * tester.mjs
+ *
+ * This is a simple library for simple unit testing; Written by me (git blame to see)
+ * when I was taking a bus for 8 hours and had no internet to add Mocha to this project.
+ *
+ * Usage notes:
+ *
+ * ~$ node tester.mjs <dirname>
+ * e.g.
+ *      ~$ node tester.mjs test
+ * To test test folder.
+ *
+ * Test format:
+ *
+ * All tests must have must be in files with ".test." in their name e.g. "router.test.mjs"
+ * All files should be in a folder provided in the node command. See <dirname> in "Usage notes"
+ * The Tester will read all such files in the designated folder and run the tests automatially.
+ *
+ */
+
 import fs from "fs/promises";
 
 function logger(scoped) {

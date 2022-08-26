@@ -1,6 +1,13 @@
 
-// I hate new keyword, so these will never be classes.
-// Usage notes:
+/**
+ * Usage notes:
+ *  Tests("Array",
+ *    Test("#lastIndexOf", () => {
+ *      const arr = [5,2,3,2,1];
+ *      assert.equal(arr.lastIndexOf(2), 3);
+ *    })
+ *  )
+ */
 
 export function Tests(name, ...tests) {
   tests.name = name;
