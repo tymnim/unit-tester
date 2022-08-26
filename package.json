@@ -1,6 +1,6 @@
 {
   "name": "unit-tester",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "A very simple framework for unit tests",
   "main": "main.mjs",
   "scripts": {
