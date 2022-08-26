@@ -86,5 +86,5 @@ async function exec(testCases, scope, depth = 1, currentLog = logger(0), results
 async function readDir(path, pattern) {
   return (await fs.readdir(path))
   .filter(file => pattern.test(file))
-  .map(file => `./${path}/${file}`);
+  .map(file => `${process.cwd()}/${path}/${file}`);
 }
