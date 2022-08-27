@@ -69,25 +69,10 @@ export async function test(args) {
   output: (Tree of) Test | Tests
 */ async function readTests ( file ) {
 
-  let nativeModules = readTests.NATIVE_MODULES
-  let subsequentModules = new Map
+  let importer = new Importer
+  let vModule = importer.create_module( file )
 
-  let sourceText = await fs.readFile(`${process.cwd()}/${file}`)
-  let context = readTests.CONTEXT
-  let vModule = new vm.SourceTextModule( sourceText, {
-    identifier: `test case module for ./${file}`,
-    initializeImportMeta ( meta, module ) {
-      meta["isTesting"] = true 
-    },
-    importModuleDynamically ( specifier, module, importAssertions ) {
- 
-    },
-    context,
-  })
-
-  await vModule.link(( specifier, referencingModule,{ assertions }) => {
-
-  })
+  await vModule.link( importer.get_or_create.bind( importer ) )
   
   // await vModule.evaluate() // may be unnecessary
   // https://nodejs.org/api/vm.html#modulenamespace
@@ -95,22 +80,57 @@ export async function test(args) {
   return vModule.namespace.default
 }
 
-readTests["CONTEXT"] = vm.createContext({})
-readTests["NATIVE_MODULES"] = new Map( await Promise.all( module.builtinModules().map( async specifier => {
-  
-  let rModule = await import(specifier)
-  let sModule = new vm.SyntheticModule(
-    Object.keys( rModule ), function evaluateSelf () {
-    // may be unnecessary if readTests does not evaluate 
-    Object.entries(rModule)
-      .forEach( entry => this.setExport( ...entry ) )
-  }, {
-    identifier: `synthetic module "${specifier}"`,
-    context: readTests["CONTEXT"]
-  })
+class Importer {
 
-  return [ specifier, sModule ]
-} ) ) )
+  loadedModules = new Map
+  
+  async get_or_create ( specifier, referencingModule,{ assertions }) {
+    return Importer.NATIVE_MODULES.get(specifier)
+      ??
+      this.loadedModules.get(specifier)
+      ?? 
+      await this.create_module(specifier)
+  }
+  
+  async create_module ( specifier ) {
+ 
+    let sourceText = await fs.readFile(`${process.cwd()}/${specifier}`)
+ 
+    let vModule = new vm.SourceTextModule( sourceText, {
+      identifier: `test case module for "${specifier}"`,
+      context: Importer.CONTEXT,
+      initializeImportMeta ( meta, module ) {
+        meta["isTesting"] = true 
+      },
+      // assuming a promise can be returned. If not... well fk
+      importModuleDynamically: this.get_or_create.bind( this ),
+    })
+
+    this.loadedModules.set( specifier, vModule )
+  
+    return vModule
+  }
+
+  static CONTEXT = vm.createContext({},{
+    name: `Tests' Context`
+  })
+  static NATIVE_MODULES = new Map( await Promise.all( module.builtinModules().map( async specifier => {
+  
+    let rModule = await import(specifier)
+    let sModule = new vm.SyntheticModule(
+      Object.keys( rModule ), function evaluateSelf () {
+      // may be unnecessary if readTests does not evaluate 
+      Object.entries(rModule)
+        .forEach( entry => this.setExport( ...entry ) )
+    }, {
+      identifier: `synthetic module "${specifier}"`,
+      context: Importer.CONTEXT
+    })
+
+    return [ specifier, sModule ]
+  } ) ) )
+  
+}
 
 async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
   for (let testCase of testCases) {
