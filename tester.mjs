@@ -42,7 +42,7 @@ export async function test(args) {
 
   for (let file of files) {
     try {
-      const testCases = (await import(`${process.cwd()}/${file}`)).default;
+      const testCases = await readTests( file );
       console.log("_".repeat(96));
       console.log("\x1b[36m%s\x1b[0m", `\t${file}`);
       const { failed } = await exec(testCases, file);
@@ -61,6 +61,13 @@ export async function test(args) {
   else {
     console.log("\n\x1b[32m%s\x1b[0m", `\t\t ✅|All Tests Passed|✅`)
   }
+}
+
+/* input: "string" relative path
+  output: (Tree of) Test | Tests
+*/ async function readTests ( file ) {
+
+ return (await import(`${process.cwd()}/${file}`)).default
 }
 
 async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
@@ -91,3 +98,5 @@ async function readDir(path, pattern) {
   .filter(file => pattern.test(file))
   .map(file => `${path}/${file}`);
 }
+
+
