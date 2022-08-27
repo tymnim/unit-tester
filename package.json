@@ -4,7 +4,7 @@
   "description": "A very simple framework for unit tests",
   "main": "main.mjs",
   "scripts": {
-    "test": "node test.mjs ."
+    "test": "node test.mjs . --experimental-vm-modules"
   },
   "repository": {
     "type": "git",
