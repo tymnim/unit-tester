@@ -68,10 +68,20 @@ export async function test(args) {
   output: (Tree of) Test | Tests
 */ async function readTests ( file ) {
 
+  let nativeModules = readTests.NATIVE_MODULES
+  let subsequentModules = new Map
+
   let sourceText = await fs.readFile(`${process.cwd()}/${file}`)
   let context = vm.createContext({  })
   let vModule = new vm.SourceTextModule( sourceText, {
-
+    identifier: `test case module for ./${file}`,
+    initializeImportMeta ( meta, module ) {
+      meta["isTesting"] = true 
+    },
+    importModuleDynamically ( specifier, module, importAssertions ) {
+ 
+    },
+    context,
   })
 
   await vModule.link(( specifier, referencingModule,{ assertions }) => {
@@ -83,6 +93,8 @@ export async function test(args) {
 
   return vModule.namespace.default
 }
+
+readTests["NATIVE_MODULES"] = new Map
 
 async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
   for (let testCase of testCases) {
