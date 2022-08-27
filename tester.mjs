@@ -20,8 +20,9 @@
  *
  */
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import assert from "node:assert"
+import vm from "node:vm"
 
 function logger(scoped) {
   return (message) => console.log("\t".repeat(scoped) + message);
@@ -67,7 +68,20 @@ export async function test(args) {
   output: (Tree of) Test | Tests
 */ async function readTests ( file ) {
 
- return (await import(`${process.cwd()}/${file}`)).default
+  let sourceText = await fs.readFile(`${process.cwd()}/${file}`)
+  let context = vm.createContext({  })
+  let vModule = new vm.SourceTextModule( sourceText, {
+
+  })
+
+  await vModule.link(( specifier, referencingModule,{ assertions }) => {
+
+  })
+  
+  // await vModule.evaluate() // may be unnecessary
+  // https://nodejs.org/api/vm.html#modulenamespace
+
+  return vModule.namespace.default
 }
 
 async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
