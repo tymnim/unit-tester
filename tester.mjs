@@ -23,6 +23,7 @@
 import fs from "node:fs/promises";
 import assert from "node:assert"
 import vm from "node:vm"
+import module from "node:module"
 
 function logger(scoped) {
   return (message) => console.log("\t".repeat(scoped) + message);
@@ -72,7 +73,7 @@ export async function test(args) {
   let subsequentModules = new Map
 
   let sourceText = await fs.readFile(`${process.cwd()}/${file}`)
-  let context = vm.createContext({  })
+  let context = readTests.CONTEXT
   let vModule = new vm.SourceTextModule( sourceText, {
     identifier: `test case module for ./${file}`,
     initializeImportMeta ( meta, module ) {
@@ -94,7 +95,22 @@ export async function test(args) {
   return vModule.namespace.default
 }
 
-readTests["NATIVE_MODULES"] = new Map
+readTests["CONTEXT"] = vm.createContext({})
+readTests["NATIVE_MODULES"] = new Map( await Promise.all( module.builtinModules().map( async specifier => {
+  
+  let rModule = await import(specifier)
+  let sModule = new vm.SyntheticModule(
+    Object.keys( rModule ), function evaluateSelf () {
+    // may be unnecessary if readTests does not evaluate 
+    Object.entries(rModule)
+      .forEach( entry => this.setExport( ...entry ) )
+  }, {
+    identifier: `synthetic module "${specifier}"`,
+    context: readTests["CONTEXT"]
+  })
+
+  return [ specifier, sModule ]
+} ) ) )
 
 async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
   for (let testCase of testCases) {
