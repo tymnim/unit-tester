@@ -21,13 +21,16 @@
  */
 
 import fs from "fs/promises";
+import assert from "node:assert"
 
 function logger(scoped) {
   return (message) => console.log("\t".repeat(scoped) + message);
 }
 
 export async function test(args) {
-  const [node, path, dirpath, filePath] = args;
+  const [node, path, dirpath, filePath, ...flags] = args;
+  
+  assert.ok( flags.includes( "--experimental-vm-modules" ) )
 
   const files = filePath ? [filePath] : await readDir(dirpath, /\.test\./);
 
