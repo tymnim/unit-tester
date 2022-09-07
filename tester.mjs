@@ -20,7 +20,9 @@
  *
  */
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
+import vm from "node:vm";
+import { readTests } from "./importer.mjs";
 
 function logger(scoped) {
   return (message) => console.log("\t".repeat(scoped) + message);
@@ -28,6 +30,10 @@ function logger(scoped) {
 
 export async function test(args) {
   const [node, path, dirpath, filePath] = args;
+
+  if (!vm.SyntheticModule) {
+    console.log("you suck!");
+  }
 
   const files = filePath ? [filePath] : await readDir(dirpath, /\.test\./);
 
@@ -39,10 +45,10 @@ export async function test(args) {
 
   for (let file of files) {
     try {
-      const testCases = (await import(`${process.cwd()}/${file}`)).default;
+      const testCases = await readTests(file);
       console.log("_".repeat(96));
       console.log("\x1b[36m%s\x1b[0m", `\t${file}`);
-      const { failed } = await exec(testCases, file);
+      const { failed } = await exec(Array.from(testCases), file);
       failures = failures.concat(failed);
     }
     catch(e) {
@@ -63,7 +69,7 @@ export async function test(args) {
 async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
   for (let testCase of testCases) {
     const log = logger(depth);
-    if (testCase instanceof Array) {
+    if (Array.isArray(testCase)) {
       currentLog(`🧪 ${testCase.name}`);
       await exec(testCase, scope + ` -> ${testCase.name}`, depth + 1, log, results);
       continue;
@@ -88,3 +94,5 @@ async function readDir(path, pattern) {
   .filter(file => pattern.test(file))
   .map(file => `${path}/${file}`);
 }
+
+
