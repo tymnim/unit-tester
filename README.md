@@ -9,8 +9,17 @@ I had to write it I was taking a bus for 6 hours and had no internet to add Moch
 
 #### Output example:
 
-![Demo Screenshot](demo-screen-shot.png)
+```
+☁  unit-tester [master] ⚡  ./test.mjs ./
+________________________________________________________________________________________________
+	.//demo.test.mjs
+🧪 core
+	🧪 Array
+		✅  -> #lastIndexOf
+		✅  -> #findLastIndex
 
+		 ✅|All Tests Passed|✅
+```
 
 # Installation
 ```
