@@ -1,3 +1,4 @@
+// @ts-check
 
 /**
  * tester.mjs
@@ -22,12 +23,19 @@
 
 import fs from "fs/promises";
 
-function logger(scoped) {
-  return (message) => console.log("\t".repeat(scoped) + message);
+/**
+ * @param {number} indentation
+ */
+function logger(indentation) {
+  /** @param {string} message */
+  return message => console.log("\t".repeat(indentation) + message);
 }
 
+/**
+ * @param {string[]} args - command line args eg process.argv when using node
+ */
 export async function test(args) {
-  const [node, path, dirpath, filePath] = args;
+  const [_node, _path, dirpath, filePath] = args;
 
   const files = filePath ? [filePath] : await readDir(dirpath, /\.test\./);
 
@@ -45,21 +53,35 @@ export async function test(args) {
       const { failed } = await exec(testCases, file);
       failures = failures.concat(failed);
     }
-    catch(e) {
+    catch (e) {
       failures.push(`${file} ->`);
       failures.push(e);
     }
   }
 
   if (failures.length) {
-    console.log("\n\x1b[31m%s\x1b[0m", `\t\t SOME TESTS FAILED =(\n`)
-    failures.forEach(fail => console.log("‼️  \x1b[31m%s\x1b[0m", fail))
+    console.log("\n\x1b[31m%s\x1b[0m", "\t\t SOME TESTS FAILED =(\n");
+    failures.forEach(fail => console.log("‼️  \x1b[31m%s\x1b[0m", fail));
   }
   else {
-    console.log("\n\x1b[32m%s\x1b[0m", `\t\t ✅|All Tests Passed|✅`)
+    console.log("\n\x1b[32m%s\x1b[0m", "\t\t ✅|All Tests Passed|✅");
   }
 }
 
+/**
+ * @typedef {Object} Test
+ * @prop {string}   name
+ * @prop {function} exec
+ */
+
+/**
+ * @param {Iterable.<Test>}           testCases
+ * @param {string}                    scope
+ * @param {number}                    depth
+ * @param {function(string): void}    currentLog
+ * @param {{failed: string[]}}        results
+ * @returns {Promise<{failed: string[]}>}
+ */
 async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
   for (let testCase of testCases) {
     const log = logger(depth);
@@ -72,7 +94,7 @@ async function exec(testCases, scope, depth = 1, currentLog = logger(0), results
       await testCase.exec();
       currentLog(`✅  -> ${testCase.name}`);
     }
-    catch(e) {
+    catch (e) {
       results.failed.push(scope + ` -> ${testCase.name}`);
       currentLog(`‼️   -> ${testCase.name}\n\t\t(${e?.message})`);
       if (e?.code !== "ERR_ASSERTION") {
@@ -83,8 +105,12 @@ async function exec(testCases, scope, depth = 1, currentLog = logger(0), results
   return results;
 }
 
+/**
+ * @param {string} path
+ * @param {RegExp} pattern
+ */
 async function readDir(path, pattern) {
   return (await fs.readdir(path))
-  .filter(file => pattern.test(file))
-  .map(file => `${path}/${file}`);
+    .filter(file => pattern.test(file))
+    .map(file => `${path}/${file}`);
 }

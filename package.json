@@ -1,10 +1,12 @@
 {
   "name": "unit-tester",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A very simple framework for unit tests",
   "main": "main.mjs",
+  "bin": "test.mjs",
   "scripts": {
-    "test": "node test.mjs ."
+    "test": "node test.mjs .",
+    "eslint": "node_modules/eslint/bin/eslint.js **/*.mjs"
   },
   "repository": {
     "type": "git",
@@ -19,5 +21,9 @@
   "bugs": {
     "url": "https://github.com/tymnim/u-tester/issues"
   },
-  "homepage": "https://github.com/tymnim/u-tester#readme"
+  "homepage": "https://github.com/tymnim/u-tester#readme",
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "1.6.0",
+    "eslint": "8.56.0"
+  }
 }
