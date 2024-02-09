@@ -1,6 +1,6 @@
 {
   "name": "unit-tester",
-  "version": "1.0.5",
+  "version": "2.0.0-beta.0",
   "description": "A very simple framework for unit tests",
   "main": "main.mjs",
   "bin": "test.mjs",
@@ -16,7 +16,7 @@
     "testing",
     "unit-testing"
   ],
-  "author": "Tim Nimets <tim@nimets.dev> (https://tim.nimets.dev/)",
+  "author": "Tim Nimets <tymnim@gmail.com> (https://tim.nimets.dev/)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/tymnim/u-tester/issues"
