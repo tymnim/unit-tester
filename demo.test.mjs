@@ -1,5 +1,4 @@
 // @ts-check
-import { Tests, Test } from "./tests.mjs";
 import assert from "node:assert";
 
 /**
@@ -24,25 +23,23 @@ function findLastIndex(array, compare) {
   return -1;
 }
 
-export default [
-  Tests(
-    "core",
-    Tests(
-      "Array",
-      Test("#lastIndexOf", () => {
+export default {
+  "core": {
+    "Array": {
+      "#lastIndexOf": () => {
         const arr = [5, 2, 3, 2, 1];
         assert.equal(lastIndexOf(arr, 2), 3);
         assert.equal(lastIndexOf(arr, 5), 0);
         assert.equal(lastIndexOf(arr, 4), -1);
-      }),
-      Test("#findLastIndex", () => {
+      },
+      "#findLastIndex": () => {
         const arr = [5, 2, 3, 2, 1];
         const euqals = number => element => element === number;
         assert.equal(findLastIndex(arr, euqals(2)), 3);
         assert.equal(findLastIndex(arr, euqals(5)), 0);
         assert.equal(findLastIndex(arr, euqals(4)), -1);
-      })
-    )
-  )
-];
+      }
+    }
+  }
+};
 

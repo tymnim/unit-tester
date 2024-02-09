@@ -69,34 +69,45 @@ export async function test(args) {
 }
 
 /**
- * @typedef {Object} Test
- * @prop {string}   name
- * @prop {function} exec
+ * Recursive test tree. Keys define names of tests or test groups and are functions in case of tests
+ * or tests in case of test groups
+ * @typedef {Object<string, (Object|function)>} Testable
+ * @example
+ * {
+ *   "test group": {
+ *     "inner test group": {
+ *       "test 1": () => {}
+ *       "further inner test group": {
+ *         "test 2": () => {}
+ *       }
+ *     }
+ *   }
+ * }
  */
 
 /**
- * @param {Iterable.<Test>}           testCases
+ * @param {Testable}                  testable
  * @param {string}                    scope
  * @param {number}                    depth
  * @param {function(string): void}    currentLog
  * @param {{failed: string[]}}        results
  * @returns {Promise<{failed: string[]}>}
  */
-async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
-  for (let testCase of testCases) {
+async function exec(testable, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
+  for (let [name, test] of Object.entries(testable)) {
     const log = logger(depth);
-    if (testCase instanceof Array) {
-      currentLog(`🧪 ${testCase.name}`);
-      await exec(testCase, scope + ` -> ${testCase.name}`, depth + 1, log, results);
+    if (!(test instanceof Function)) {
+      currentLog(`🧪 ${name}`);
+      await exec(test, scope + ` -> ${name}`, depth + 1, log, results);
       continue;
     }
     try {
-      await testCase.exec();
-      currentLog(`✅  -> ${testCase.name}`);
+      await test();
+      currentLog(`✅  -> ${name}`);
     }
     catch (e) {
-      results.failed.push(scope + ` -> ${testCase.name}`);
-      currentLog(`‼️   -> ${testCase.name}\n\t\t(${e?.message})`);
+      results.failed.push(scope + ` -> ${name}`);
+      currentLog(`‼️   -> ${name}\n\t\t(${e?.message})`);
       if (e?.code !== "ERR_ASSERTION") {
         console.error(e);
       }
