@@ -1,3 +1,4 @@
+// @ts-check
 
 /**
  * tester.mjs
@@ -22,12 +23,19 @@
 
 import fs from "fs/promises";
 
-function logger(scoped) {
-  return (message) => console.log("\t".repeat(scoped) + message);
+/**
+ * @param {number} indentation
+ */
+function logger(indentation) {
+  /** @param {string} message */
+  return message => console.log("\t".repeat(indentation) + message);
 }
 
+/**
+ * @param {string[]} args - command line args eg process.argv when using node
+ */
 export async function test(args) {
-  const [node, path, dirpath, filePath] = args;
+  const [_node, _path, dirpath, filePath] = args;
 
   const files = filePath ? [filePath] : await readDir(dirpath, /\.test\./);
 
@@ -45,36 +53,61 @@ export async function test(args) {
       const { failed } = await exec(testCases, file);
       failures = failures.concat(failed);
     }
-    catch(e) {
+    catch (e) {
       failures.push(`${file} ->`);
       failures.push(e);
     }
   }
 
   if (failures.length) {
-    console.log("\n\x1b[31m%s\x1b[0m", `\t\t SOME TESTS FAILED =(\n`)
-    failures.forEach(fail => console.log("‼️  \x1b[31m%s\x1b[0m", fail))
+    console.log("\n\x1b[31m%s\x1b[0m", "\t\t SOME TESTS FAILED =(\n");
+    failures.forEach(fail => console.log("‼️  \x1b[31m%s\x1b[0m", fail));
   }
   else {
-    console.log("\n\x1b[32m%s\x1b[0m", `\t\t ✅|All Tests Passed|✅`)
+    console.log("\n\x1b[32m%s\x1b[0m", "\t\t ✅|All Tests Passed|✅");
   }
 }
 
-async function exec(testCases, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
-  for (let testCase of testCases) {
+/**
+ * Recursive test tree. Keys define names of tests or test groups and are functions in case of tests
+ * or tests in case of test groups
+ * @typedef {Object<string, (Object|function)>} Testable
+ * @example
+ * {
+ *   "test group": {
+ *     "inner test group": {
+ *       "test 1": () => {}
+ *       "further inner test group": {
+ *         "test 2": () => {}
+ *       }
+ *     }
+ *   }
+ * }
+ */
+
+/**
+ * @param {Testable}                  testable
+ * @param {string}                    scope
+ * @param {number}                    depth
+ * @param {function(string): void}    currentLog
+ * @param {{failed: string[]}}        results
+ * @returns {Promise<{failed: string[]}>}
+ */
+async function exec(testable, scope, depth = 1, currentLog = logger(0), results = { failed: [] }) {
+  for (let [name, test] of Object.entries(testable)) {
     const log = logger(depth);
-    if (testCase instanceof Array) {
-      currentLog(`🧪 ${testCase.name}`);
-      await exec(testCase, scope + ` -> ${testCase.name}`, depth + 1, log, results);
+    if (!(test instanceof Function)) {
+      currentLog(`🧪 ${name}`);
+      await exec(test, scope + ` -> ${name}`, depth + 1, log, results);
       continue;
     }
     try {
-      await testCase.exec();
-      currentLog(`✅  -> ${testCase.name}`);
+      await test();
+      currentLog(`✅  -> ${name}`);
     }
-    catch(e) {
-      results.failed.push(scope + ` -> ${testCase.name}`);
-      currentLog(`‼️   -> ${testCase.name}\n\t\t(${e?.message})`);
+    catch (e) {
+      results.failed.push(scope + ` -> ${name}`);
+      currentLog(`‼️   -> ${name}\n\t\t(${e?.message})`);
       if (e?.code !== "ERR_ASSERTION") {
         console.error(e);
       }
@@ -83,8 +116,12 @@ async function exec(testCases, scope, depth = 1, currentLog = logger(0), results
   return results;
 }
 
+/**
+ * @param {string} path
+ * @param {RegExp} pattern
+ */
 async function readDir(path, pattern) {
   return (await fs.readdir(path))
-  .filter(file => pattern.test(file))
-  .map(file => `${path}/${file}`);
+    .filter(file => pattern.test(file))
+    .map(file => `${path}/${file}`);
 }
