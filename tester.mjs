@@ -66,6 +66,7 @@ export async function test(args) {
   else {
     console.log("\n\x1b[32m%s\x1b[0m", "\t\t ✅|All Tests Passed|✅");
   }
+  return failures.length;
 }
 
 /**

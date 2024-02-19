@@ -1,4 +1,5 @@
 #!/usr/bin/env node
 
 import { test } from "./tester.mjs";
-test(process.argv);
+test(process.argv)
+  .then(process.exit);
